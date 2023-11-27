@@ -152,7 +152,7 @@ if (!file.exists("output/bfi_cross-country-test-data_open-psychometrics.rds")) {
 
 # Combine cross-country fit measures with within-country fit measures
 
-ipip_network_fit <- ipip_comparison %>% 
+ipip_network_fit <- comparison_data %>% 
   select(
     country_1 = country,
     country_2 = country,
@@ -172,22 +172,22 @@ cross_country_fit <- bind_rows(
 ## Create matrices
 
 matrix_cfi   <- matrix(cross_country_fit$cfi_network, 
-                       nrow = 27,
+                       nrow = length(countries),
                        dimnames = list(unique(cross_country_fit$country_1),
                                        unique(cross_country_fit$country_1)))
 
 matrix_tli   <- matrix(cross_country_fit$tli_network, 
-                       nrow = 27,
+                       nrow = length(countries),
                        dimnames = list(unique(cross_country_fit$country_1),
                                        unique(cross_country_fit$country_1)))
 
 matrix_rmsea <- matrix(cross_country_fit$rmsea_network, 
-                       nrow = 27,
+                       nrow = length(countries),
                        dimnames = list(unique(cross_country_fit$country_1),
                                        unique(cross_country_fit$country_1)))
 
 matrix_bic   <- matrix(cross_country_fit$bic_network, 
-                       nrow = 27,
+                       nrow = length(countries),
                        dimnames = list(unique(cross_country_fit$country_1),
                                        unique(cross_country_fit$country_1)))
 
@@ -200,13 +200,254 @@ matrix_bic   <- as.data.frame(matrix_bic)
 
 ### Full
 
-write.csv(matrix_cfi,   "output/ipip-neo_matrix-cfi-test.csv")
-write.csv(matrix_tli,   "output/ipip-neo_matrix-tli-test.csv")
-write.csv(matrix_rmsea, "output/ipip-neo_matrix-rmsea-test.csv")
-write.csv(matrix_bic,   "output/ipip-neo_matrix-bic-test.csv")
+write.csv(matrix_cfi,   "output/bfi_op_matrix-cfi-test.csv")
+write.csv(matrix_tli,   "output/bfi_op_matrix-tli-test.csv")
+write.csv(matrix_rmsea, "output/bfi_op_matrix-rmsea-test.csv")
+write.csv(matrix_bic,   "output/bfi_op_matrix-bic-test.csv")
 
 ### Readable (rounded to three digits)
 
-write.csv(round(matrix_cfi, 3),   "output/ipip-neo_matrix-cfi-test-rounded.csv")
-write.csv(round(matrix_tli, 3),   "output/ipip-neo_matrix-tli-test-rounded.csv")
-write.csv(round(matrix_rmsea, 3), "output/ipip-neo_matrix-rmsea-test-rounded.csv")
+write.csv(round(matrix_cfi, 3),   "output/bfi_op_matrix-cfi-test-rounded.csv")
+write.csv(round(matrix_tli, 3),   "output/bfi_op_matrix-tli-test-rounded.csv")
+write.csv(round(matrix_rmsea, 3), "output/bfi_op_matrix-rmsea-test-rounded.csv")
+
+# Visualization and description ------------------------------------------------
+
+# Data for visualization
+
+iso_countries <- read_csv("https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv")
+
+colnames(iso_countries) <- str_replace_all(colnames(iso_countries), "-", "_")
+
+## Country names
+
+country_name_df <- data.frame(
+  alpha_2  = countries
+  ) %>% 
+  left_join(select(iso_countries, name, alpha_2), by = "alpha_2") %>% 
+  mutate(
+    name = case_when(
+      name == "United States of America" ~ "USA",
+      name == "United Kingdom of Great Britain and Northern Ireland" ~ "UK",
+      name == "United Arab Emirates" ~ "UAE",
+      name == "Russian Federation" ~ "Russia",
+      TRUE ~ name
+    )
+  ) %>% 
+  arrange(alpha_2)
+
+cross_country_fit <- cross_country_fit %>% 
+  left_join(country_name_df, by = c("country_1" = "alpha_2")) %>% 
+  mutate(
+    country_1 = name
+  ) %>% 
+  select(-name) %>% 
+  left_join(country_name_df, by = c("country_2" = "alpha_2")) %>% 
+  mutate(
+    country_2 = name
+  ) %>% 
+  select(-name)
+
+## Identify whether fit measures correspond to origin country
+
+cross_country_fit <- cross_country_fit %>% 
+  mutate(
+    model_source = case_when(
+      country_1 == country_2 ~ 1,
+      country_1 != country_2 ~ 0
+    )
+  )
+
+## Cross country BIC comparison
+
+cross_country_bic <- cross_country_fit %>%
+  group_by(country_2) %>% 
+  mutate(
+    bic_scaled = as.numeric(scale(bic_network))
+  ) %>% 
+  ungroup()
+
+bic_summary <- cross_country_bic %>% 
+  group_by(country_2) %>% 
+  summarise(
+    mean_bic   = mean(bic_network, na.rm = TRUE),
+    sd_bic     = sd(bic_network, na.rm = TRUE)
+  ) %>% 
+  ungroup()
+
+## Long form BIC data for model comparison
+
+test_data_bic_long <- comparison_data %>% 
+  pivot_longer(
+    cols = starts_with("bic"),
+    names_to = "model",
+    values_to = "bic"
+  ) %>% 
+  left_join(country_name_df, by = c("country" = "alpha_2")) %>% 
+  mutate(
+    country = name
+  ) %>% 
+  select(-name) %>% 
+  left_join(
+    select(bic_summary, country = country_2, mean_bic, sd_bic),
+    by = "country"
+  ) %>% 
+  group_by(country) %>% 
+  mutate(
+    # Scaled for cross-country network comparison
+    bic_scaled      = (bic - mean_bic) / sd_bic,
+    # Scaled for network to factor model comparison
+    bic_scaled_comp = as.numeric(scale(bic))
+  ) %>% 
+  ungroup()
+
+## Identify best fitting models
+
+cross_country_best <- cross_country_fit %>% 
+  group_by(country_2) %>% 
+  summarise(
+    best_model_bic   = country_1[which(bic_network == min(bic_network))],
+    best_model_rmsea = country_1[which(rmsea_network == min(rmsea_network))],
+    best_model_cfi   = country_1[which(cfi_network == max(cfi_network))]
+  ) %>% 
+  rename(
+    country = country_2
+  )
+
+## Bayes factors for each country's model vs. origin's model
+
+cross_country_bf <- cross_country_fit %>% 
+  left_join(
+    select(
+      filter(cross_country_fit,
+             country_1 == country_2),
+      country_2,
+      bic_origin = bic_network
+    ), 
+    by = "country_2"
+  ) %>% 
+  mutate(
+    bf_origin  = exp( (bic_network - bic_origin) / 2 ),
+    bf_e_power = (bic_network - bic_origin) / 2
+  ) %>% 
+  filter(country_1 != country_2)
+
+cross_country_bf_descriptives <- cross_country_bf %>% 
+  group_by(country_2) %>% 
+  summarise(
+    origin_in_favor = sum(bf_e_power > 0),
+    prop_origin     = sum(bf_e_power > 0)/n()
+  )
+
+### Best competitor vs. origin model
+
+cross_country_bic_min <- cross_country_fit %>%
+  filter(!(country_1 == country_2)) %>% 
+  group_by(country_2) %>% 
+  summarise(
+    country_comp   = country_1[which(bic_network == min(bic_network))],
+    bic_comparison = min(bic_network)
+  )
+
+best_competitor_bf <- cross_country_fit %>% 
+  filter(country_1 == country_2) %>% 
+  left_join(cross_country_bic_min, by = "country_2") %>% 
+  mutate(
+    bf_origin  = exp( (bic_comparison - bic_network) / 2 ),
+    bf_e_power = (bic_comparison - bic_network) / 2
+  ) %>% 
+  select(country_2, country_comp, bf_origin, bf_e_power)
+
+### Join data
+
+cross_country_bf_descriptives <- cross_country_bf_descriptives %>% 
+  left_join(best_competitor_bf, by = "country_2") %>% 
+  select(country = country_2, everything())
+
+write_csv(cross_country_bf_descriptives, 
+          "output/bfi_op_origin-model-performance.csv")
+
+# Swarm plots of fit statistics
+
+## BIC
+
+swarm_bic_cross_country <- 
+  ggplot(cross_country_bic,
+         aes(
+           x     = bic_scaled,
+           y     = country_2,
+           color = as.factor(model_source),
+           size  = as.factor(model_source),
+         )) +
+  geom_quasirandom(
+    alpha = .50
+  ) +
+  geom_point(
+    data = test_data_bic_long,
+    aes(
+      y = country
+    ),
+    color = "#B5446E",
+    size = .75,
+    alpha = .50
+  ) +
+  scale_color_manual(
+    values = c("#355070", "#53131E"),
+    labels = c("Other Countries", "Origin")
+  ) +
+  scale_size_discrete(
+    range = c(.50, 1.5),
+    labels = c("Other Countries", "Origin")
+  ) +
+  scale_y_discrete(
+  ) +
+  labs(
+    y     = "Data Origin",
+    x     = "BIC (standardized within country)",
+    color = "Model Origin",
+    size  = "Model Origin",
+    subtitle = "Cross-Country Network Invariance"
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = "bottom"
+  )
+
+swarm_bic_model_comparison <- 
+  ggplot(test_data_bic_long,
+         aes(
+           x     = bic_scaled_comp,
+           y     = country,
+           color = as.factor(model)
+         )) +
+  geom_point(
+    size = 1
+  ) +
+  scale_color_manual(
+    labels = c("Acquiescence", "Big Five","Network"),
+    values = c("#37123C", "#FE7F2D", "#5995ED", "#619B8A")
+  ) +
+  scale_y_discrete(
+  ) +
+  labs(
+    color = "Model",
+    y = "",
+    x = "BIC (standardized within country)",
+    subtitle = "Comparison of models"
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = "bottom"
+  )
+
+## Combine plots
+
+swarm_plots_bic <- plot_grid(swarm_bic_model_comparison, 
+                             swarm_bic_cross_country, 
+                             nrow = 1, rel_widths = c(1, 1))
+
+## Save figure
+
+save_plot("figures/bfi_op_bic_test-data_model-comparison-swarms.png", 
+          swarm_plots_bic,
+          base_width = 10.50, base_height = 7)
