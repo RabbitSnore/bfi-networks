@@ -2,7 +2,7 @@
 
 # Big Five Network Analysis - Importation and Cleaning of Data 
 
-# Gallardo-Pujol et al
+# Gallardo-Pujol et al (2022), https://doi.org/10.1027/2698-1866/a000020
 
 ################################################################################
 

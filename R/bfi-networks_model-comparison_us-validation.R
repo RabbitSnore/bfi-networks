@@ -2,7 +2,7 @@
 
 # Big Five Network Analysis - Network Modeling vs. Factor Modeling
 
-# Gallardo-Pujol et al (2022), https://doi.org/10.1027/2698-1866/a000020
+# Zhang et al (2022), https://doi.org/10.1177/10731911211008245
 
 ################################################################################
 
@@ -20,7 +20,7 @@ lapply(packages, library, character.only = TRUE)
 
 # Load precleaned data
 
-bfi_spanish <- read_csv("data/spanish-adaptation/bfi_spanish-adaptation_clean.csv")
+bfi_us <- read_csv("data/chinese-adaptation/bfi_us-validation_clean.csv")
 
 # Network models vs. Factor models ---------------------------------------------
 
@@ -39,7 +39,7 @@ if (!dir.exists("output")) {
 ## Five factor models
 
 big_five <- 
-'
+  '
 e =~ BFI1 + BFI6  + BFI11 + BFI16 + BFI21 + BFI26 + BFI31 + BFI36 + BFI41 + BFI46 + BFI51 + BFI56
 a =~ BFI2 + BFI7  + BFI12 + BFI17 + BFI22 + BFI27 + BFI32 + BFI37 + BFI42 + BFI47 + BFI52 + BFI57
 c =~ BFI3 + BFI8  + BFI13 + BFI18 + BFI23 + BFI28 + BFI33 + BFI38 + BFI43 + BFI48 + BFI53 + BFI58
@@ -49,7 +49,7 @@ o =~ BFI5 + BFI10 + BFI15 + BFI20 + BFI25 + BFI30 + BFI35 + BFI40 + BFI45 + BFI5
 '
 
 bifactor <- 
-'
+  '
 
 e =~ BFI1 + BFI6  + BFI11 + BFI16 + BFI21 + BFI26 + BFI31 + BFI36 + BFI41 + BFI46 + BFI51 + BFI56
 a =~ BFI2 + BFI7  + BFI12 + BFI17 + BFI22 + BFI27 + BFI32 + BFI37 + BFI42 + BFI47 + BFI52 + BFI57
@@ -176,7 +176,7 @@ o3 ~~ 0*o
 '
 
 higher_order <- 
-'
+  '
 e =~ e1 + e2 + e3
 a =~ a1 + a2 + a3 
 c =~ c1 + c2 + c3
@@ -206,7 +206,7 @@ o3  =~ BFI15 + BFI30 + BFI45 + BFI60
 '
 
 acquiescence <- 
-'
+  '
 
 e =~ 1*BFI1 + 1*BFI6  + 1*BFI11 + 1*BFI16 + 1*BFI21 + 1*BFI26 + 1*BFI31 + 1*BFI36 + 1*BFI41 + 1*BFI46 + 1*BFI51 + 1*BFI56
 a =~ 1*BFI2 + 1*BFI7  + 1*BFI12 + 1*BFI17 + 1*BFI22 + 1*BFI27 + 1*BFI32 + 1*BFI37 + 1*BFI42 + 1*BFI47 + 1*BFI52 + 1*BFI57
@@ -316,10 +316,9 @@ o3 ~~ 0*o
 
 '
 
-
 # Data preparation -------------------------------------------------------------
 
-model_data <- bfi_spanish %>% 
+model_data <- bfi_us %>% 
   filter(complete.cases(.))
 
 # Modeling ---------------------------------------------------------------------
@@ -334,7 +333,7 @@ bfi_fit_data <- data.frame(
   bic   = rep(NA, 5)
 )
 
-set.seed(8989)
+set.seed(3435)
 
 training_indices <- sample(1:nrow(model_data), 
                            size = round(nrow(model_data)*train_test_ratio[1]), 
@@ -503,9 +502,8 @@ bfi_fit_data$bic[5]   <- test_net_fit$Value[test_net_fit$Measure == "bic"]
 # Save goodness-of-fit data
 
 write_rds(bfi_fit_data, 
-          file = "output/bfi_model-comparison-data_spanish-adaptation.rds")
+          file = "output/bfi_model-comparison-data_us-validation.rds")
 
 write_csv(select(bfi_fit_data, -omega), 
-          file = "output/bfi_model-comparison-data_spanish-adaptation.csv")
-    
-  
+          file = "output/bfi_model-comparison-data_us-validation.csv")
+
