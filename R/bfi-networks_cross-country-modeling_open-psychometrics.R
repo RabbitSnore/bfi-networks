@@ -277,6 +277,11 @@ bic_summary <- cross_country_bic %>%
 
 ## Long form BIC data for model comparison
 
+esem_data <- read_rds("output/bfi_op_ffm-esem-model-fit.rds")
+
+comparison_data <- comparison_data %>% 
+  left_join(esem_data, by = "country")
+
 test_data_bic_long <- comparison_data %>% 
   pivot_longer(
     cols = starts_with("bic"),
@@ -424,8 +429,8 @@ swarm_bic_model_comparison <-
     size = 1
   ) +
   scale_color_manual(
-    labels = c("Acquiescence", "Big Five","Network"),
-    values = c("#37123C", "#FE7F2D", "#5995ED", "#619B8A")
+    labels = c("Acquiescence", "Big Five", "ESEM", "Network"),
+    values = c("#37123C", "#FE7F2D", "#EFAAC4", "#5995ED", "#619B8A")
   ) +
   scale_y_discrete(
   ) +
