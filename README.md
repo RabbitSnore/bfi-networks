@@ -38,3 +38,18 @@ automatically download all necessary data.
 - `R` contains the scripts for data cleaning and analyses
 - `output` contains the stored results of the analyses
 - `figures` contains data visualizations
+
+## Reproduce Analyses
+
+The easiest method of reproducing the analyses is to run
+`source("R/bfi-networks_build-projects.R")`, which will run all the code to
+build the project content, in the necessary order. By default, the code is set
+up to load the stored output. This approach is useful if you want to recreate
+the analytic environment as we created it. However, if you want to reproduce all
+the analyses from scratch, delete the `output` folder before running the build
+script. Note that the analyses are computationally intensive. Even with parallel
+processing, you should expect computation times in the order of hours, on a
+typical personal computer.
+
+If you are reproducing the analyses from scratch, be sure to adjust the parallel
+processing set up to suit your specific computing environment!
