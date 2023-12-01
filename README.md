@@ -12,11 +12,10 @@ and Short Forms of the Spanish Adaptation of the Big Five Inventory-2.
 Psychological Test Adaptation and Development, 3(1), 44–69.
 https://doi.org/10.1027/2698-1866/a000020
 
-Soto, C. J., Link to external site,  this link will open in a new tab, & John,
-O. P. (2017). The next Big Five Inventory (BFI-2): Developing and assessing a
-hierarchical model with 15 facets to enhance bandwidth, fidelity, and predictive
-power. Journal of Personality and Social Psychology, 113(1), 117–143.
-https://doi.org/10.1037/pspp0000096
+Soto, C. J., & John, O. P. (2017). The next Big Five Inventory (BFI-2):
+Developing and assessing a hierarchical model with 15 facets to enhance
+bandwidth, fidelity, and predictive power. Journal of Personality and Social
+Psychology, 113(1), 117–143. https://doi.org/10.1037/pspp0000096
 
 Zhang, B., Li, Y. M., Li, J., Luo, J., Ye, Y., Yin, L., Chen, Z., Soto, C. J., &
 John, O. P. (2022). The Big Five Inventory–2 in China: A Comprehensive
