@@ -10,11 +10,15 @@ source("R/bfi-networks_import-clean_cbf.R")
 
 source("R/bfi-network_model-comparison_cbf.R")
 
+source("R/bfi-networks_ffm-esem_cbf.R")
+
 # Spanish Adaptation of the Big Five Inventory ---------------------------------
 
 source("R/bfi-networks_import-clean_spanish-adaptation.R")
 
 source("R/bfi-network_model-comparison_spanish-adaptation.R")
+
+source("R/bfi-networks_ffm-esem_spanish-adaptation.R")
 
 # Chinese Adaptation of the Big Five Inventory ---------------------------------
 
@@ -22,9 +26,13 @@ source("R/bfi-networks_import-clean_chinese-adaptation.R")
 
 source("R/bfi-network_model-comparison_chinese-adaptation.R")
 
+source("R/bfi-networks_ffm-esem_chinese-adaptation.R")
+
 # United States Validation of the Big Five Inventory ---------------------------
 
 source("R/bfi-network_model-comparison_us-validation.R")
+
+source("R/bfi-networks_ffm-esem_us-validation.R")
 
 # Open-Source Psychometrics Project --------------------------------------------
 

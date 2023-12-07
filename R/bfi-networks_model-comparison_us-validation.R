@@ -2,7 +2,7 @@
 
 # Big Five Network Analysis - Network Modeling vs. Factor Modeling
 
-# Zhang et al (2022), https://doi.org/10.1177/10731911211008245
+# Soto & John (2017)
 
 ################################################################################
 

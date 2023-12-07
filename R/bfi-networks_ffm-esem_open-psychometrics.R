@@ -1,6 +1,6 @@
 ################################################################################
 
-# IPIP-NEO Network Analysis - Five Factor and Unconstrained ESEM Approach
+# Big Five Network Analysis - Five Factor and Unconstrained ESEM Approach
 
 ################################################################################
 
@@ -24,9 +24,7 @@ lapply(packages, library, character.only = TRUE)
 
 op_ipip_ffm <- read_csv("data/openpsychometrics/bfi_open-psychometrics_clean.csv")
 
-# Network models vs. Factor models ---------------------------------------------
-
-# Procedural set up
+# Procedural set up ------------------------------------------------------------
 
 if (!dir.exists("output")) {
   
