@@ -51,6 +51,17 @@ country_pairs_2 <- country_pairs_1 %>%
 
 country_pairs <- bind_rows(country_pairs_1, country_pairs_2)
 
+# Create item key
+
+ffm_key <- data.frame(
+  item  = colnames(op_ipip_ffm)[-1],
+  trait = c(rep("E", 10),
+            rep("N", 10),
+            rep("A", 10),
+            rep("C", 10),
+            rep("O", 10))
+)
+
 # Parallel computing set up
 
 # IMPORTANT! Modify this for your system. Do not assume this default will work
@@ -456,3 +467,26 @@ swarm_plots_bic <- plot_grid(swarm_bic_model_comparison,
 save_plot("figures/bfi_op_bic_test-data_model-comparison-swarms.png", 
           swarm_plots_bic,
           base_width = 10.50, base_height = 7)
+
+# Network similarities ---------------------------------------------------------
+
+# Matrix of frequency of networks featuring each edge
+
+similarity_network <- Reduce("+", comparison_data$omega)
+
+dimnames(similarity_network) <- list(1:50, 1:50)
+
+qgraph(similarity_network,
+       layout    = "spring",
+       groups    = as.factor(ffm_key$trait),
+       theme     = "colorblind",
+       filename  = "figures/bfi_op_similarity-network",
+       filetype  = "png",
+       height    = 8,
+       width     = 8,
+       vsize     = 4,
+       legend    = TRUE
+)
+
+write_csv(as.data.frame(similarity_network), 
+          "output/bfi_op_similarity-network.csv")
